@@ -1,0 +1,5 @@
+kivy==2.3.1
+buildozer==1.5.0
+cx_Freeze==8.3.0
+cabarchive==0.2.4
+clr_loader==0.2.7.post0
