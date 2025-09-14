@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Ava - Admin</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:Segoe UI,Arial;margin:20px;background:#f3f6f8;color:#222}
+    .card{background:#fff;padding:16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+    .btn{padding:6px 8px;border-radius:6px;border:1px solid #ddd;background:#fafafa;cursor:pointer}
+    .btn.danger{color:#b00020}
+    .role-select{padding:6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Users Management</h2>
+    <div>
+      <label>Page: <input id="page" type="number" value="1" min="1" style="width:80px"></label>
+      <button id="btnLoad" class="btn">Load</button>
+    </div>
+
+    <table id="usersTable">
+      <thead><tr><th>ID</th><th>Full name</th><th>Role</th><th>Active</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function api(path, opts = {}) {
+      opts.headers = opts.headers || {};
+      if (opts.json) {
+        opts.method = opts.method || 'POST';
+        opts.body = JSON.stringify(opts.json);
+        opts.headers['Content-Type'] = 'application/json';
+      }
+      const res = await fetch(path, opts);
+      const ctype = res.headers.get('content-type') || '';
+      const data = ctype.includes('application/json') ? await res.json() : null;
+      return { ok: res.ok, status: res.status, data };
+    }
+
+    async function load(page=1) {
+      const r = await api('/api/admin/users?page='+page);
+      if (!r.ok) { alert('Failed to load users'); return; }
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = '';
+      r.data.users.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${u.id}</td>
+          <td>${u.fullname}</td>
+          <td>
+            <select class="role-select" data-id="${u.id}">
+              <option value="user" ${u.role==='user'?'selected':''}>User</option>
+              <option value="intern" ${u.role==='intern'?'selected':''}>Intern</option>
+              <option value="moderator" ${u.role==='moderator'?'selected':''}>Moderator</option>
+              <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+              <option value="developer" ${u.role==='developer'?'selected':''}>Developer</option>
+            </select>
+          </td>
+          <td>${u.active? 'Yes' : 'No'}</td>
+          <td>
+            <button class="btn" data-id="${u.id}" data-action="save">Save Role</button>
+            <button class="btn danger" data-id="${u.id}" data-action="toggle">${u.active ? 'Deactivate' : 'Activate'}</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // attach actions
+      document.querySelectorAll('button[data-action]').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.getAttribute('data-id');
+          const action = btn.getAttribute('data-action');
+          if (action === 'save') {
+            const sel = document.querySelector(`select[data-id="${id}"]`);
+            const role = sel.value;
+            const res = await api(`/api/users/${id}/role`, { json: { role } });
+            if (!res.ok) return alert('Role change failed: '+JSON.stringify(res.data));
+            alert('Role updated');
+            load(document.getElementById('page').value || 1);
+          } else if (action === 'toggle') {
+            const btnText = btn.textContent;
+            const actionName = btnText.toLowerCase().includes('deact') ? 'deactivate' : 'activate';
+            const confirmMsg = actionName === 'deactivate' ? 'Deactivate this user?' : 'Activate this user?';
+            if (!confirm(confirmMsg)) return;
+            const res = await api(`/api/users/${id}/deactivate`, { json: { action: actionName } });
+            if (!res.ok) return alert('Action failed: '+JSON.stringify(res.data));
+            alert('Done');
+            load(document.getElementById('page').value || 1);
+          }
+        };
+      });
+    }
+
+    document.getElementById('btnLoad').addEventListener('click', () => load(document.getElementById('page').value || 1));
+    // initial load
+    load(1);
+  </script>
+</body>
+</html>

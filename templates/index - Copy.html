@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AVA — Register & Feed</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* ---- Neumorphic-ish styling (adapted) ---- */
+    :root {
+      --bg: #e0e5ec;
+      --shadow-dark: #c2c8d0;
+      --shadow-light: #ffffff;
+      --card-radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      padding: 28px;
+      color: #222;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg);
+      border-radius: var(--card-radius);
+      padding: 18px;
+      box-shadow: 8px 8px 20px var(--shadow-dark), -8px -8px 20px var(--shadow-light);
+    }
+
+    h2 { margin: 0 0 12px 0; font-size: 1.1rem; }
+
+    label { font-size: 0.85rem; color: #444; display:block; margin-top:10px; }
+    input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 10px;
+      background: var(--bg);
+      box-shadow: inset 4px 4px 6px #c8ccd1, inset -4px -4px 6px #f0f5fa;
+      font-size: 0.95rem;
+    }
+    textarea { min-height: 60px; resize: vertical; }
+
+    .small-row { display:flex; gap:8px; }
+    .small-row > * { flex:1; }
+
+    .lang-row { display:flex; gap:10px; margin-top:8px; }
+    .lang-row label { display:flex; align-items:center; gap:6px; font-weight:500; }
+
+    input[type="file"] { margin-top:8px; }
+
+    button.primary {
+      margin-top: 14px;
+      width:100%;
+      padding: 12px;
+      border:none;
+      border-radius: 12px;
+      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+      background: var(--bg);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.primary:hover { transform: translateY(-1px); }
+
+    /* Feed area */
+    .feed-header { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .post-box { margin-top:12px; display:flex; gap:10px; align-items:flex-start; }
+    .avatar {
+      width:48px; height:48px; border-radius:50%;
+      background: linear-gradient(135deg,#f6f7f9,#dfe5eb);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;color:#666;
+    }
+
+    .post-list { margin-top:16px; display:flex; flex-direction:column; gap:12px; }
+    .post {
+      padding:12px; border-radius:12px; background:var(--bg);
+      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+    }
+    .post .meta { font-size:0.85rem; color:#555; display:flex; justify-content:space-between; align-items:center; }
+    .post .content { margin-top:8px; white-space:pre-wrap; }
+
+    .muted { color:#6b6f74; font-size:0.9rem; }
+
+    .btn-link { background:none;border:none;color:#007bff;cursor:pointer; padding:6px; border-radius:6px; }
+    .btn-danger { color: #b00020; border: 1px solid rgba(176,0,32,0.08); padding:6px 8px; border-radius:8px; background:transparent; cursor:pointer; }
+
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Left: Register / Login -->
+    <div class="card">
+      <h2>Create account</h2>
+
+      <form id="registerForm">
+        <label>Full name</label>
+        <input name="fullname" type="text" required>
+
+        <label>Education (school)</label>
+        <input name="education" type="text">
+
+        <label class="small-row">
+          <span style="flex:1">
+            Home town / village
+            <input name="hometown" type="text">
+          </span>
+        </label>
+
+        <label>Home district</label>
+        <input name="district" type="text">
+
+        <label>Date of birth</label>
+        <input name="dob" type="date">
+
+        <label>Religion</label>
+        <input name="religion" type="text">
+
+        <label>Marital status</label>
+        <select name="marital_status">
+          <option value="">--select--</option>
+          <option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option>
+        </select>
+
+        <label>Technical skills</label>
+        <textarea name="technical_skills"></textarea>
+
+        <label>Soft skills</label>
+        <textarea name="soft_skills"></textarea>
+
+        <label>Languages</label>
+        <div class="lang-row">
+          <label><input type="checkbox" name="languages" value="English"> English</label>
+          <label><input type="checkbox" name="languages" value="Chichewa"> Chichewa</label>
+          <label><input type="checkbox" name="languages" value="Spanish"> Spanish</label>
+        </div>
+
+        <label>Hobbies</label>
+        <textarea name="hobbies"></textarea>
+
+        <label>Work / Job</label>
+        <input name="job" type="text">
+
+        <label>Phone number</label>
+        <input name="phone" type="tel">
+
+        <label>Email</label>
+        <input name="email" type="email" required>
+
+        <label>Password</label>
+        <input name="password" type="text" required placeholder="choose a password">
+
+        <label>Interested in</label>
+        <input name="interested_in" type="text">
+
+        <label>Profile picture</label>
+        <input name="profilepic" type="file" accept="image/*">
+
+        <button class="primary" type="submit">Register & Sign in</button>
+      </form>
+
+      <hr style="margin:14px 0; border:none; border-top:1px solid rgba(0,0,0,0.06)">
+
+      <h2>Sign in</h2>
+      <form id="loginForm">
+        <label>Email</label>
+        <input name="email" type="email" required>
+        <label>Password</label>
+        <input name="password" type="text" required>
+        <button class="primary" type="submit">Sign in</button>
+      </form>
+
+      <div style="margin-top:12px; font-size:0.9rem; color:#666">
+        <div>Tip: this simple demo stores data in SQLite in the server folder.</div>
+      </div>
+    </div>
+
+    <!-- Right: Feed -->
+    <div class="card">
+      <div class="feed-header">
+        <div>
+          <h2>Feed</h2>
+          <div class="muted" id="userStatus">Not signed in</div>
+        </div>
+        <div>
+          <button id="btnLogout" class="btn-link" style="display:none">Logout</button>
+        </div>
+      </div>
+
+      <div id="composerArea" style="display:none">
+        <div class="post-box">
+          <div id="composerAvatar" class="avatar">U</div>
+          <div style="flex:1">
+            <textarea id="postContent" placeholder="What's on your mind?" style="width:100%; padding:10px; border-radius:10px; border:none; box-shadow: inset 4px 4px 6px #c8ccd1, inset -4px -4px 6px #f0f5fa;"></textarea>
+            <button id="btnPost" class="primary" style="width:auto; margin-top:10px; padding:8px 12px;">Post</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-list" id="postList">
+        <!-- posts injected here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Utility fetch wrapper
+    async function api(path, opts = {}) {
+      opts.headers = opts.headers || {};
+      // default: send JSON for non-file POSTs
+      if (opts.json) {
+        opts.method = opts.method || 'POST';
+        opts.body = JSON.stringify(opts.json);
+        opts.headers['Content-Type'] = 'application/json';
+      }
+      const res = await fetch(path, opts);
+      const ctype = res.headers.get('content-type') || '';
+      if (ctype.includes('application/json')) {
+        return { ok: res.ok, status: res.status, data: await res.json() };
+      } else {
+        return { ok: res.ok, status: res.status, data: null };
+      }
+    }
+
+    // UI references
+    const registerForm = document.getElementById('registerForm');
+    const loginForm = document.getElementById('loginForm');
+    const userStatus = document.getElementById('userStatus');
+    const composerArea = document.getElementById('composerArea');
+    const composerAvatar = document.getElementById('composerAvatar');
+    const postContent = document.getElementById('postContent');
+    const btnPost = document.getElementById('btnPost');
+    const postList = document.getElementById('postList');
+    const btnLogout = document.getElementById('btnLogout');
+
+    let currentUser = null;
+
+    // --- auth flows ---
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(registerForm);
+      const res = await fetch('/api/register', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.error || JSON.stringify(json));
+        return;
+      }
+      currentUser = json.user;
+      onSignIn();
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = new FormData(loginForm);
+      const payload = {
+        email: form.get('email'),
+        password: form.get('password')
+      };
+      const r = await api('/api/login', { json: payload });
+      if (!r.ok) {
+        alert(r.data?.error || 'Login failed');
+        return;
+      }
+      currentUser = r.data.user;
+      onSignIn();
+    });
+
+    btnLogout.addEventListener('click', async () => {
+      await api('/api/logout', { method: 'POST' });
+      currentUser = null;
+      onSignOut();
+    });
+
+    async function fetchMe() {
+      const r = await api('/api/me');
+      if (r.ok && r.data.user) {
+        currentUser = r.data.user;
+      } else {
+        currentUser = null;
+      }
+      onSignIn();
+    }
+
+    function onSignIn() {
+      if (!currentUser) return onSignOut();
+      userStatus.textContent = `Signed in as ${currentUser.fullname}`;
+      composerArea.style.display = '';
+      composerAvatar.textContent = (currentUser.fullname || 'U').split(' ').map(s=>s[0]).slice(0,2).join('');
+      btnLogout.style.display = '';
+      // hide register/login forms (optional)
+      // document.querySelector('.card form#registerForm').style.display='none';
+    }
+
+    function onSignOut() {
+      userStatus.textContent = 'Not signed in';
+      composerArea.style.display = 'none';
+      composerAvatar.textContent = 'U';
+      btnLogout.style.display = 'none';
+    }
+
+    // --- posts ---
+    async function loadPosts() {
+      const r = await api('/api/posts');
+      if (!r.ok) return;
+      postList.innerHTML = '';
+      r.data.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'post';
+        div.innerHTML = `
+          <div style="display:flex; gap:10px; align-items:center;">
+            <div style="width:44px; height:44px; border-radius:50%; overflow:hidden; background:#f0f0f0; display:flex;align-items:center;justify-content:center;">
+              ${p.user.profile_pic ? `<img src="${p.user.profile_pic}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="font-weight:700; color:#666">${(p.user.fullname||'U').split(' ').map(s=>s[0]).slice(0,2).join('')}</div>`}
+            </div>
+            <div style="flex:1">
+              <div class="meta">
+                <div><strong>${escapeHtml(p.user.fullname)}</strong> · <span class="muted">${new Date(p.created_at).toLocaleString()}</span></div>
+                <div></div>
+              </div>
+              <div class="content">${escapeHtml(p.content)}</div>
+              <div style="margin-top:8px; display:flex; gap:8px;">
+                ${currentUser && currentUser.id === p.user.id ? `<button class="btn-danger" data-delete="${p.id}">Delete</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+        postList.appendChild(div);
+      });
+
+      // attach delete listeners
+      document.querySelectorAll('button[data-delete]').forEach(btn => {
+        btn.onclick = async (e) => {
+          const id = btn.getAttribute('data-delete');
+          if (!confirm('Delete this post?')) return;
+          const r = await fetch('/api/posts/' + id, { method: 'DELETE' });
+          if (r.status === 200) {
+            loadPosts();
+          } else {
+            alert('Could not delete post');
+          }
+        };
+      });
+    }
+
+    btnPost.addEventListener('click', async () => {
+      const content = postContent.value.trim();
+      if (!content) { alert('Write something'); return; }
+      const r = await api('/api/posts', { json: { content } });
+      if (!r.ok) {
+        alert(r.data?.error || 'Failed to post. Are you signed in?');
+        return;
+      }
+      postContent.value = '';
+      loadPosts();
+    });
+
+    // small HTML escape to prevent XSS in this simple demo
+    function escapeHtml(s){
+      if(!s) return '';
+      return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+    }
+
+    // bootstrap
+    (async function(){
+      await fetchMe();
+      await loadPosts();
+      // periodically refresh feed
+      setInterval(loadPosts, 20000);
+    })();
+  </script>
+</body>
+</html>

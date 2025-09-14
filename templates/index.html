@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>NIT- My ava</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* simplified neumorphic UI — keep from earlier file */
+    :root { --bg:#e0e5ec; --sdark:#c2c8d0; --slight:#fff; }
+    * { box-sizing:border-box; }
+    body{margin:0;min-height:100vh;font-family:Segoe UI,Arial;background:var(--bg);padding:20px;color:#222;}
+    .app{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:360px 1fr;gap:20px;}
+    .card{background:var(--bg);border-radius:12px;padding:16px;box-shadow:8px 8px 20px var(--sdark),-8px -8px 20px var(--slight);}
+    h2{margin:0 0 8px 0}
+    label{display:block;margin-top:8px;color:#444;font-weight:600;font-size:0.9rem}
+    input,textarea,select{width:100%;margin-top:6px;padding:10px;border:none;border-radius:10px;background:var(--bg);box-shadow:inset 4px 4px 6px #c8ccd1,inset -4px -4px 6px #f0f5fa;}
+    button.primary{margin-top:12px;padding:10px;border-radius:10px;border:none;cursor:pointer;box-shadow:6px 6px 12px var(--sdark),-6px -6px 12px var(--slight);background:var(--bg);font-weight:700}
+    .muted{color:#666;font-size:0.9rem}
+    .avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f6f7f9,#dfe5eb);font-weight:700}
+    .post-list{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+    .post{padding:10px;border-radius:10px;background:var(--bg);box-shadow:6px 6px 12px var(--sdark),-6px -6px 12px var(--slight);}
+    .meta{display:flex;justify-content:space-between;align-items:center;color:#555}
+    .small{font-size:0.9rem;color:#666}
+    .btn-link{background:none;border:none;color:#007bff;cursor:pointer}
+    .btn-danger{color:#b00020;background:transparent;border:none;cursor:pointer}
+    @media (max-width:900px){.app{grid-template-columns:1fr}}
+    .notification-badge{background:#ff3b30;color:#fff;padding:2px 8px;border-radius:12px;font-size:0.8rem;margin-left:8px}
+    .chat-area{margin-top:10px;border-radius:8px;padding:8px;background:linear-gradient(180deg,#fafafa,#f1f5f8);height:220px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Left: registration / auth -->
+    <div class="card">
+      <h2>Create account</h2>
+      <form id="registerForm">
+        <label>Full name</label>
+        <input name="fullname" type="text" required>
+
+        <label>Education (school)</label>
+        <input name="education" type="text">
+
+        <label class="small-row">
+          <span style="flex:1">
+            Home town / village
+            <input name="hometown" type="text">
+          </span>
+        </label>
+
+        <label>Home district</label>
+        <input name="district" type="text">
+
+        <label>Date of birth</label>
+        <input name="dob" type="date">
+
+        <label>Religion</label>
+        <input name="religion" type="text">
+
+        <label>Marital status</label>
+        <select name="marital_status">
+          <option value="">--select--</option>
+          <option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option>
+        </select>
+
+        <label>Technical skills</label>
+        <textarea name="technical_skills"></textarea>
+
+        <label>Soft skills</label>
+        <textarea name="soft_skills"></textarea>
+
+        <label>Languages</label>
+        <div class="lang-row">
+          <label><input type="checkbox" name="languages" value="English"> English</label>
+          <label><input type="checkbox" name="languages" value="Chichewa"> Chichewa</label>
+          <label><input type="checkbox" name="languages" value="Spanish"> Spanish</label>
+        </div>
+
+        <label>Hobbies</label>
+        <textarea name="hobbies"></textarea>
+
+        <label>Work / Job</label>
+        <input name="job" type="text">
+
+        <label>Phone number</label>
+        <input name="phone" type="tel">
+
+        <label>Email</label>
+        <input name="email" type="email" required>
+
+        <label>Password</label>
+        <input name="password" type="text" required placeholder="choose a password">
+
+        <label>Interested in</label>
+        <input name="interested_in" type="text">
+        <label>Profile pic</label><input name="profilepic" type="file" accept="image/*">
+        <button class="primary" type="submit">Register & Sign in</button>
+      </form>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid rgba(0,0,0,0.06)">
+
+      <h2>Sign in</h2>
+      <form id="loginForm">
+        <label>Email</label><input name="email" type="email" required>
+        <label>Password</label><input name="password" type="text" required>
+        <button class="primary" type="submit">Sign in</button>
+      </form>
+
+      <div style="margin-top:12px" class="muted">Tip: to make someone admin, update their role in the DB manually (for now).</div>
+    </div>
+
+    <!-- Right: feed + composer + notifications -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h2>Feed <span id="notifCount" style="display:none" class="notification-badge">0</span></h2>
+          <div id="userStatus" class="muted">Not signed in</div>
+        </div>
+        <div>
+          <button id="btnLogout" class="btn-link" style="display:none">Logout</button>
+        </div>
+      </div>
+
+      <div id="composerArea" style="display:none">
+        <div style="display:flex;gap:10px;align-items:flex-start;margin-top:12px">
+          <div id="composerAvatar" class="avatar">U</div>
+          <div style="flex:1">
+            <textarea id="postContent" placeholder="What's happening?" style="width:100%;min-height:70px;padding:10px;border-radius:10px"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="btnPost" class="primary">Post</button>
+              <button id="btnOpenChat" class="primary" type="button">Open Chat</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="small">Latest posts</div>
+          <div><button id="btnLoadMore" class="btn-link">Load more</button></div>
+        </div>
+
+        <div class="post-list" id="postList"></div>
+        <div id="loadingMore" class="muted" style="display:none;margin-top:8px">Loading...</div>
+      </div>
+
+      <div id="chatModal" style="display:none;margin-top:12px">
+        <h3>Chat room</h3>
+        <div class="chat-area" id="chatArea"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="chatMessage" placeholder="Type a message..." style="flex:1;padding:8px;border-radius:8px">
+          <button id="sendChat" class="primary">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.IO client (CDN) -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <script>
+    // helper API wrapper
+    async function api(path, opts = {}) {
+      opts.headers = opts.headers || {};
+      if (opts.json) {
+        opts.method = opts.method || 'POST';
+        opts.body = JSON.stringify(opts.json);
+        opts.headers['Content-Type'] = 'application/json';
+      }
+      const res = await fetch(path, opts);
+      const ctype = res.headers.get('content-type') || '';
+      const data = ctype.includes('application/json') ? await res.json() : null;
+      return { ok: res.ok, status: res.status, data };
+    }
+
+    // UI refs
+    const registerForm = document.getElementById('registerForm');
+    const loginForm = document.getElementById('loginForm');
+    const userStatus = document.getElementById('userStatus');
+    const composerArea = document.getElementById('composerArea');
+    const composerAvatar = document.getElementById('composerAvatar');
+    const postContent = document.getElementById('postContent');
+    const btnPost = document.getElementById('btnPost');
+    const postList = document.getElementById('postList');
+    const btnLogout = document.getElementById('btnLogout');
+    const notifCountEl = document.getElementById('notifCount');
+    const btnLoadMore = document.getElementById('btnLoadMore');
+    const loadingMore = document.getElementById('loadingMore');
+    const chatModal = document.getElementById('chatModal');
+    const chatArea = document.getElementById('chatArea');
+    const btnOpenChat = document.getElementById('btnOpenChat');
+    const chatMessage = document.getElementById('chatMessage');
+    const sendChatBtn = document.getElementById('sendChat');
+
+    let currentUser = null;
+    let page = 1, per_page = 6;
+    let socket = null;
+    let notifCount = 0;
+
+    // --------- AUTH ----------
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(registerForm);
+      const res = await fetch('/api/register', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!res.ok) { alert(json.error || 'Register failed'); return; }
+      currentUser = json.user;
+      afterSignIn();
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(loginForm);
+      const payload = { email: fd.get('email'), password: fd.get('password') };
+      const r = await api('/api/login', { json: payload });
+      if (!r.ok) { alert(r.data?.error || 'Login failed'); return; }
+      currentUser = r.data.user;
+      afterSignIn();
+    });
+
+    btnLogout.addEventListener('click', async () => {
+      await api('/api/logout', { method: 'POST' });
+      currentUser = null;
+      afterSignOut();
+    });
+
+    async function getMe(){
+      const r = await api('/api/me');
+      if (r.ok && r.data && r.data.user) currentUser = r.data.user;
+      else currentUser = null;
+      if (currentUser) afterSignIn(); else afterSignOut();
+    }
+
+    function afterSignIn(){
+      userStatus.textContent = `Signed in as ${currentUser.fullname} (${currentUser.role})`;
+      composerArea.style.display = '';
+      composerAvatar.textContent = (currentUser.fullname||'U').split(' ').map(s=>s[0]).slice(0,2).join('');
+      btnLogout.style.display = '';
+      // create/connect socket
+      if (!socket) initSocket();
+    }
+    function afterSignOut(){
+      userStatus.textContent = 'Not signed in';
+      composerArea.style.display = 'none';
+      composerAvatar.textContent = 'U';
+      btnLogout.style.display = 'none';
+      if (socket) socket.disconnect();
+      socket = null;
+    }
+
+    // --------- POSTS ----------
+    async function loadPosts(reset=false){
+      if (reset) { page = 1; postList.innerHTML = ''; }
+      loadingMore.style.display = '';
+      const r = await api(`/api/posts?page=${page}&per_page=${per_page}`);
+      loadingMore.style.display = 'none';
+      if (!r.ok) return alert('Could not load posts');
+      r.data.posts.forEach(renderPost);
+      // if more pages
+      if (page < r.data.pages) {
+        btnLoadMore.style.display = '';
+        page++;
+      } else {
+        btnLoadMore.style.display = 'none';
+      }
+    }
+
+    btnLoadMore.addEventListener('click', () => loadPosts());
+
+    function renderPost(p){
+      const div = document.createElement('div');
+      div.className = 'post';
+      const owner = p.user;
+      const isOwner = currentUser && currentUser.id === owner.id;
+      const likeCount = p.likes ? p.likes.length : 0;
+      div.innerHTML = `
+        <div style="display:flex;gap:10px">
+          <div style="width:48px"><div class="avatar">${owner.fullname.split(' ').map(s=>s[0]).slice(0,2).join('')}</div></div>
+          <div style="flex:1">
+            <div class="meta"><div><strong>${escapeHtml(owner.fullname)}</strong> · <span class="small">${new Date(p.created_at).toLocaleString()}</span></div>
+              <div>${isOwner ? '<button class="btn-danger" data-delete="'+p.id+'">Delete</button>' : ''}</div>
+            </div>
+            <div style="margin-top:8px">${escapeHtml(p.content)}</div>
+            <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+              <button class="btn-like" data-id="${p.id}">Like (${likeCount})</button>
+              <button class="btn-comment" data-id="${p.id}">Comment</button>
+              <button class="btn-follow" data-id="${owner.id}">Follow</button>
+            </div>
+            <div class="comments" id="comments_${p.id}" style="margin-top:8px"></div>
+          </div>
+        </div>
+      `;
+      postList.appendChild(div);
+
+      // handlers
+      div.querySelectorAll('.btn-like').forEach(btn => {
+        btn.onclick = async () => {
+          const pid = btn.getAttribute('data-id');
+          const r = await api(`/api/posts/${pid}/like`, { method: 'POST' });
+          if (!r.ok) { alert('like failed'); return; }
+          // simple reload posts
+          postList.innerHTML = '';
+          loadPosts(true);
+        };
+      });
+      div.querySelectorAll('.btn-comment').forEach(btn => {
+        btn.onclick = async () => {
+          const pid = btn.getAttribute('data-id');
+          const text = prompt('Write comment:');
+          if (!text) return;
+          const r = await api(`/api/posts/${pid}/comments`, { json: { text }});
+          if (!r.ok) return alert('comment failed');
+          const cdiv = document.getElementById('comments_'+pid);
+          const row = document.createElement('div');
+          row.innerHTML = `<div style="font-size:0.9rem"><strong>${escapeHtml(r.data.comment.user.fullname)}</strong> ${escapeHtml(r.data.comment.text)}</div>`;
+          cdiv.appendChild(row);
+        };
+      });
+      div.querySelectorAll('.btn-follow').forEach(btn => {
+        btn.onclick = async () => {
+          const uid = btn.getAttribute('data-id');
+          const r = await api(`/api/users/${uid}/follow`, { method: 'POST' });
+          if (!r.ok) return alert('follow failed');
+          btn.textContent = r.data.followed ? 'Unfollow' : 'Follow';
+        };
+      });
+      div.querySelectorAll('button[data-delete]').forEach(btn => {
+        btn.onclick = async () => {
+          if (!confirm('Delete post?')) return;
+          const id = btn.getAttribute('data-delete');
+          const r = await fetch('/api/posts/' + id, { method: 'DELETE' });
+          if (r.status === 200) {
+            alert('deleted');
+            postList.innerHTML = '';
+            loadPosts(true);
+          } else {
+            const j = await r.json();
+            alert('delete failed: ' + (j.error || ''));
+          }
+        };
+      });
+
+      // render existing comments quickly
+      if (p.comments && p.comments.length) {
+        const cdiv = document.getElementById('comments_'+p.id);
+        p.comments.forEach(c => {
+          const row = document.createElement('div');
+          row.innerHTML = `<div style="font-size:0.9rem"><strong>${escapeHtml(c.user.fullname)}</strong> ${escapeHtml(c.text)}</div>`;
+          cdiv.appendChild(row);
+        });
+      }
+    }
+
+    btnPost.addEventListener('click', async () => {
+      const content = (postContent.value || '').trim();
+      if (!content) return alert('Write something');
+      const r = await api('/api/posts', { json: { content }});
+      if (!r.ok) return alert('Post failed: ' + (r.data && r.data.error));
+      postContent.value = '';
+      postList.innerHTML = '';
+      loadPosts(true);
+    });
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+    }
+
+    // --------- Socket.IO ----------
+    function initSocket(){
+      socket = io({ transports: ['websocket'] });
+      socket.on('connect', () => {
+        console.log('socket connected');
+      });
+      socket.on('connected', (d) => console.log('connected event', d));
+      socket.on('notification', (n) => {
+        console.log('notif', n);
+        notifCount++;
+        notifCountEl.style.display = '';
+        notifCountEl.textContent = notifCount;
+        // small desktop alert
+        if (n.type === 'new_post') {
+          // optionally reload feed
+        }
+      });
+      socket.on('chat_message', (m) => {
+        const el = document.createElement('div');
+        el.innerHTML = `<div><strong>User ${m.from_user}</strong> ${escapeHtml(m.text)} <span class="small muted">${new Date(m.ts).toLocaleTimeString()}</span></div>`;
+        chatArea.appendChild(el);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      });
+      socket.on('post_deleted', (d) => {
+        // refresh feed
+        postList.innerHTML = '';
+        loadPosts(true);
+      });
+    }
+
+    // Chat UI
+    btnOpenChat.addEventListener('click', () => {
+      chatModal.style.display = chatModal.style.display === 'none' ? '' : 'none';
+      if (chatModal.style.display !== 'none') {
+        chatArea.innerHTML = '';
+        // join global demo room
+        if (socket) socket.emit('join_chat', { room: 'global' });
+      } else {
+        if (socket) socket.emit('leave_chat', { room: 'global' });
+      }
+    });
+
+    sendChatBtn.addEventListener('click', () => {
+      const text = chatMessage.value.trim();
+      if (!text) return;
+      if (!socket) return alert('not connected');
+      socket.emit('send_message', { room: 'global', text });
+      chatMessage.value = '';
+    });
+
+    // initial load
+    (async function bootstrap(){
+      await getMe();
+      await loadPosts(true);
+    })();
+  </script>
+</body>
+</html>

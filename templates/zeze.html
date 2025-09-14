@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Times Table Circle Animation</title>
+  <style>
+    body {
+      background-color: black;
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+
+<script>
+  const canvas = document.getElementById("myCanvas");
+  const ctx = canvas.getContext("2d");
+
+  // Fullscreen canvas
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r = 200;  // radius
+  const n = 50;   // number of points
+  const m = 2;    // multiplication factor
+
+  ctx.strokeStyle = "cyan";
+  ctx.lineWidth = 1.5;
+
+  let i = 0;  // start point
+
+  function drawStep() {
+    if (i < n) {
+      let x1 = cx + r * Math.cos(2 * Math.PI * i / n);
+      let y1 = cy + r * Math.sin(2 * Math.PI * i / n);
+
+      let j = (i * m) % n;
+      let x2 = cx + r * Math.cos(2 * Math.PI * j / n);
+      let y2 = cy + r * Math.sin(2 * Math.PI * j / n);
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      i++;
+      requestAnimationFrame(drawStep); // keep animating
+    }
+  }
+
+  drawStep(); // start animation
+</script>
+</body>
+</html>

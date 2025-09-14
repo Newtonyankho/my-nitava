@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Notifications</title></head>
+<body>
+  <div style="max-width:900px;margin:20px auto">
+    <h2>Notifications</h2>
+    <div id="list"></div>
+    <button id="btnMark" onclick="markRead()">Mark selected read</button>
+  </div>
+
+  <script>
+    async function api(path, opts={}) {
+      opts.headers = opts.headers || {};
+      if (opts.json) {
+        opts.method = opts.method || 'POST';
+        opts.body = JSON.stringify(opts.json);
+        opts.headers['Content-Type'] = 'application/json';
+      }
+      const r = await fetch(path, opts);
+      const ctype = r.headers.get('content-type') || '';
+      const data = ctype.includes('application/json') ? await r.json() : null;
+      return { ok: r.ok, status: r.status, data };
+    }
+
+    async function load() {
+      const r = await api('/api/notifications');
+      if (!r.ok) { document.getElementById('list').innerText = 'Failed to load'; return; }
+      const el = document.getElementById('list');
+      el.innerHTML = '';
+      r.data.notifications.forEach(n => {
+        const d = document.createElement('div');
+        d.innerHTML = `<input type="checkbox" value="${n.id}"> <strong>${n.type}</strong> - ${n.message} <small>(${new Date(n.created_at).toLocaleString()})</small>`;
+        el.appendChild(d);
+      });
+    }
+
+    async function markRead(){
+      const ids = Array.from(document.querySelectorAll('#list input[type=checkbox]:checked')).map(i=>parseInt(i.value));
+      if (!ids.length) return alert('Select items first');
+      const r = await api('/api/notifications/mark_read', { json: { ids }});
+      if (!r.ok) return alert('Failed to mark');
+      alert('Marked: '+JSON.stringify(r.data.marked || ids));
+      load();
+    }
+
+    load();
+  </script>
+</body>
+</html>
